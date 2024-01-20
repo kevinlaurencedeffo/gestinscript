@@ -58,7 +58,7 @@ class PaiementViewSet(viewsets.ModelViewSet):
     @csrf_exempt   
     def perform_create(self, serializer):
         try:
-            amount = serializer.validated_data['amount']
+            amount = serializer.validated_data['montant_paiement']
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
                 currency='eur', 
