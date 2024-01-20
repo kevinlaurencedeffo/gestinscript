@@ -54,6 +54,20 @@ class FiliereViewSet(viewsets.ModelViewSet):
 class PaiementViewSet(viewsets.ModelViewSet):
     queryset = Paiement.objects.all()
     serializer_class = PaiementSerializer
+    stripe.api_key = 'sk_test_51OaZeFFqBmvfi26IatJkHIxQ1126CrGOWzMUY51n7DrigF3UZl7jacAS4TLbfzsmU9F7KOI4Acyc6WocJhBesdoO00ww00suEM'
+    @csrf_exempt   
+    def perform_create(self, serializer):
+        try:
+            amount = serializer.validated_data['amount']
+            payment_intent = stripe.PaymentIntent.create(
+                amount=amount,
+                currency='eur', 
+            )
+            payment_intent.confirm(payment_intent.id,payment_method="pm_card_visa",return_url="https://www.example.com")
+            serializer.save()
+            return JsonResponse({'clientSecret': payment_intent.client_secret})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['GET'])
 def InsertWithFile(request,*args, **kwargs):
@@ -110,8 +124,7 @@ class LogoutView(APIView):
         logout(request)
         return Response(status=204)
  
-stripe.api_key = 'sk_test_51L5SZ1AUXuv32ejpEDDc3R1JR4Tyi78zunsftetLIRIo332Dl7OoMfFwYa2SkNvdZ6jerxGA4GOJPPRTodyIizhj00TlDKj1Rk'
-@csrf_exempt
+
 def create_payment_intent(request):
     if request.method == 'POST':
         try:
